@@ -49,12 +49,12 @@ int main() {
 	);
 	Lsystem tree;
 	tree.addRule('F', "F[+F]F[-F][F]", 0.5f);
-	tree.addRule('F', "F[+F]F", 0.25f);
-	tree.addRule('F', "F[-F]F", 0.25f);
+	tree.addRule('F', "F[+F]F", 0.3f);
+	tree.addRule('F', "F[-F]F", 0.2f);
 	tree.setAxiom("F");
 	tree.iterate(6);
 	
-	Turtle turtle(0.03f, 0.436332f);
+	Turtle turtle(0.02f, 0.436332f);
 	turtle.build(tree.product);
 	//for (vec2 v : turtle.vertices) {
 	//	cout << v.x << ", " << v.y << "\n";

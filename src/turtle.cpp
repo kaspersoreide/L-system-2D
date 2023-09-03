@@ -1,7 +1,7 @@
 #include "turtle.h"
 
 Turtle::Turtle(float step, float angle) {
-    state = {vec2(0.0f, 0.0f), 0.0f, step};
+    state = {vec2(0.0f, 0.0f), 1.57079632679489661923f, step};
     rotationAngle = angle;
 }
 
@@ -18,11 +18,9 @@ void Turtle::build(string buildString) {
         
         switch (buildString[i]) {
             case 'F':
+                vec2 dir = {cosf(state.angle), sinf(state.angle)};
                 vertices.push_back(state.pos);
-                state.pos += state.step * vec2(
-                    cosf(state.angle),
-                    sinf(state.angle)
-                );
+                state.pos += state.step * dir;
                 vertices.push_back(state.pos);
                 break;
             case '[':
