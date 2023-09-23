@@ -11,7 +11,7 @@ public:
         float step;
     };
 
-    Turtle(float step, float rotationAngle);
+    Turtle(float initialStep, float stepDecay, float rotationAngle);
     void build(string buildString);
     void pushState();
     void popState();
@@ -20,4 +20,5 @@ public:
     State state;
     stack<State> stateStack;
     float rotationAngle;
+    float stepDecay;
 };

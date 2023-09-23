@@ -56,3 +56,15 @@ GLuint loadShaders(const char* vertex, const char* frag) {
 
 	return program;
 }
+
+GLuint loadComputeShader(const char* compute) {
+	GLuint cshader = glCreateShader(GL_COMPUTE_SHADER);
+	GLuint program = glCreateProgram();
+	loadShaderCodeFromFile(compute, cshader);
+	glCompileShader(cshader);
+	checkShaderError(cshader, compute);
+	glAttachShader(program, cshader);
+	glLinkProgram(program);
+	glDeleteShader(cshader);
+	return program;
+}

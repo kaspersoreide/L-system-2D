@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include "glutils.h"
 
 using namespace std;
 
@@ -18,7 +19,13 @@ public:
     void addRule(char in, string out, float probability);
     void setAxiom(string s);
     void iterate(int n);
+    void iterateParallel(int n);
+    void loadProductionsBuffer();
     
     vector<Production> rules;
     string product;
+
+    GLuint inputBuffer;
+    GLuint outputBuffer;
+    GLuint productionsBuffer;
 };
