@@ -9,7 +9,7 @@ layout (binding = 0) coherent readonly buffer block1
     uvec2 input_data[gl_WorkGroupSize.x];
 };
 
-layout (binding = 1) coherent readonly buffer block2
+layout (binding = 1) coherent writeonly buffer block2
 {
     uint output_data[];
 };

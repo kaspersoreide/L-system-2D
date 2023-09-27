@@ -56,8 +56,8 @@ int main() {
 	tree.addRule('+', "+", 1.0f);
 	tree.addRule('-', "-", 1.0f);
 	tree.setAxiom("F");
-	tree.iterate(3);
-	tree.iterateParallel(1);
+	//tree.iterate(3);
+	for (int i = 0; i < 5; i++) tree.iterateParallel(1);
 	//tree.iterate(6);
 	
 	Turtle turtle(0.02f, 0.2f, 0.436332f);

@@ -66,6 +66,7 @@ void Lsystem::loadProductionsBuffer() {
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, count * (3 * sizeof(uint32_t) + sizeof(float)), totalStringLength * sizeof(uint32_t), allProductions.data());
 
     /*
+    //printing
     vector<uint32_t> bufferdata;
     bufferdata.resize(totalBufferSize);
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, totalBufferSize, bufferdata.data());
@@ -112,6 +113,7 @@ void Lsystem::iterateParallel(int n) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, 2 * test.size() * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    
     glUseProgram(sumShader);
     glDispatchCompute(test.size() / 1024 + 1, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -122,11 +124,14 @@ void Lsystem::iterateParallel(int n) {
     inputBuffer = tmp;
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
-    GLuint lastOffset; 
-    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, (2 * test.size() - 1) * sizeof(uint32_t), sizeof(uint32_t), &lastOffset);
+    uvec2 lastBufferEntry; 
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, (2 * test.size() - 2) * sizeof(uint32_t), 2 * sizeof(uint32_t), &lastBufferEntry);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
-    //TODO: actually compute size of output buffer properly
-    glBufferData(GL_SHADER_STORAGE_BUFFER, (lastOffset + 13) * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+    //resize output buffer to (last offset + length of last string)
+    glBufferData(GL_SHADER_STORAGE_BUFFER, (lastBufferEntry.y + rules[lastBufferEntry.x].out.size()) * sizeof(uint32_t), NULL, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, productionsBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, productionsBuffer);
     glUseProgram(productShader);
     glDispatchCompute((2 * test.size()) / 32 + 1, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -137,12 +142,18 @@ void Lsystem::iterateParallel(int n) {
     int outputSize;
     glGetBufferParameteriv(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &outputSize);
     vector<uint32_t> testSum;
-    testSum.resize(outputSize);
+    testSum.resize(outputSize / sizeof(uint32_t));
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, outputSize, testSum.data());
+    /*
     cout << "buffer data:\n";
     for (int i = 0; i < testSum.size(); i++) {
         cout << ", " << testSum[i];
     }
-    
+    */
+
+    product = "";
+    for (auto c : testSum) {
+        product += c;
+    }
 
 }
