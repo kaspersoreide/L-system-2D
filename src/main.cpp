@@ -56,14 +56,14 @@ int main() {
 	tree.addRule('+', "+", 1.0f);
 	tree.addRule('-', "-", 1.0f);
 	tree.setAxiom("F");
-	//tree.iterate(3);
 	for (int i = 0; i < 5; i++) tree.iterateParallel(1);
 	//tree.iterate(6);
 	
-	Turtle turtle(0.02f, 0.2f, 0.436332f);
-	turtle.build(tree.product);
+	Turtle turtle(0.02f, 0.2f, 0.136332f);
+	//turtle.build(tree.product);
+	turtle.buildGPU(tree.outputBuffer);
 	
-
+	/*
 	Lsystem triangle;
 	triangle.addRule('B', "A-B-A", 1.0f);
 	triangle.addRule('A', "B+A+B", 1.0f);
@@ -71,22 +71,22 @@ int main() {
 	triangle.iterate(1);
 	Turtle turtle2(0.003f, 0.66667f, 1.047198f);
 	turtle2.build(triangle.product);
-
+	
 	//for (vec2 v : turtle.vertices) {
 	//	cout << v.x << ", " << v.y << "\n";
 	//}
-	GLuint treeVAO = vertexArray1x2f(turtle.vertices);
+	//GLuint treeVAO = vertexArray1x2f(turtle.vertices);
 	GLuint triangleVAO = vertexArray1x2f(turtle2.vertices);
+	*/
 	GLuint treeShader = loadShaders("shaders/tree/vert.glsl", "shaders/tree/frag.glsl");
 	glUseProgram(treeShader);
-	glBindVertexArray(treeVAO);
-
+	glBindVertexArray(turtle.VAO);
 	
 	while (!glfwWindowShouldClose(window)) {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		glDrawArrays(GL_LINES, 0, turtle.vertices.size());
+		glDrawArrays(GL_LINES, 0, turtle.vertexCount);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
