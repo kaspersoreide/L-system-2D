@@ -21,6 +21,7 @@ public:
     void iterate(int n);
     void iterateParallel(int n);
     void loadProductionsBuffer();
+    void swapBuffers();
     
     vector<Production> rules;
     string product;

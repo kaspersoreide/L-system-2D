@@ -53,7 +53,7 @@ float random(uint x) { return floatConstruct(hash(x)); }
 
 void main() {
     uint id = gl_GlobalInvocationID.x;
-    uint stringId = 2;
+    uint stringId = 0;
     float randomValue = random(id + input_data[id]);
     float baseValue = 0.0;
     for (int i = 0; i < N_PRODUCTIONS; i++) {

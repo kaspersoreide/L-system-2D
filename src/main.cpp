@@ -56,28 +56,30 @@ int main() {
 	tree.addRule('+', "+", 1.0f);
 	tree.addRule('-', "-", 1.0f);
 	tree.setAxiom("F");
-	for (int i = 0; i < 5; i++) tree.iterateParallel(1);
-	//tree.iterate(6);
+	tree.iterate(2);
+	tree.iterateParallel(3);
+	
 	
 	Turtle turtle(0.02f, 0.2f, 0.136332f);
 	//turtle.build(tree.product);
 	turtle.buildGPU(tree.outputBuffer);
 	
-	/*
-	Lsystem triangle;
-	triangle.addRule('B', "A-B-A", 1.0f);
-	triangle.addRule('A', "B+A+B", 1.0f);
-	triangle.setAxiom("A");
-	triangle.iterate(1);
-	Turtle turtle2(0.003f, 0.66667f, 1.047198f);
-	turtle2.build(triangle.product);
+	
+	//Lsystem triangle;
+	//triangle.addRule('B', "A-B-A", 1.0f);
+	//triangle.addRule('A', "B+A+B", 1.0f);
+	//triangle.setAxiom("A");
+	//triangle.iterate(1);
+	//triangle.iterateParallel(4);
+	//Turtle turtle2(0.003f, 0.66667f, 1.047198f);
+	//turtle2.buildGPU(triangle.inputBuffer);
+	//turtle2.build(triangle.product);
 	
 	//for (vec2 v : turtle.vertices) {
 	//	cout << v.x << ", " << v.y << "\n";
 	//}
 	//GLuint treeVAO = vertexArray1x2f(turtle.vertices);
-	GLuint triangleVAO = vertexArray1x2f(turtle2.vertices);
-	*/
+	
 	GLuint treeShader = loadShaders("shaders/tree/vert.glsl", "shaders/tree/frag.glsl");
 	glUseProgram(treeShader);
 	glBindVertexArray(turtle.VAO);

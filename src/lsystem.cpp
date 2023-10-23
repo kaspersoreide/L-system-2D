@@ -58,7 +58,7 @@ void Lsystem::loadProductionsBuffer() {
         totalStringLength += p.out.size();
     }
     uint totalBufferSize = count * (3 * sizeof(uint32_t) + sizeof(float)) + totalStringLength * sizeof(uint32_t);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, totalBufferSize, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, totalBufferSize, NULL, GL_STATIC_DRAW);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(uint32_t) * count, inputs.data());
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, count * sizeof(uint32_t), count * sizeof(uint32_t), offsets.data());
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 2 * count * sizeof(uint32_t), count * sizeof(uint32_t), lengths.data());
@@ -79,9 +79,16 @@ void Lsystem::loadProductionsBuffer() {
     */
 }
 
+void Lsystem::swapBuffers() {
+    GLuint tmp = inputBuffer;
+    inputBuffer = outputBuffer;
+    outputBuffer = tmp;
+}
+
 void Lsystem::iterateParallel(int n) {
-    vector<uint32_t> test;
-    for (char c : product) test.push_back(c);
+    vector<uint32_t> uintString;
+    for (char c : product) uintString.push_back(c);
+    int stringSize = uintString.size();
     loadProductionsBuffer();
     glDeleteBuffers(1, &inputBuffer);
     glDeleteBuffers(1, &outputBuffer);
@@ -91,69 +98,73 @@ void Lsystem::iterateParallel(int n) {
     GLuint stringAssignShader = loadComputeShader("shaders/compute/stringassign.glsl");
     GLuint sumShader = loadComputeShader("shaders/compute/scansum.glsl");
     GLuint productShader = loadComputeShader("shaders/compute/genproduct.glsl");
-    glUseProgram(stringAssignShader);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, test.size() * sizeof(uint32_t), test.data(), GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, 2 * test.size() * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, productionsBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, productionsBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    glDispatchCompute(test.size() / 32 + 1, 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    //scansum
-    GLuint tmp = outputBuffer;
-    outputBuffer = inputBuffer;
-    inputBuffer = tmp;
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, 2 * test.size() * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
     
-    glUseProgram(sumShader);
-    glDispatchCompute(test.size() / 1024 + 1, 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    //genproduct
-    tmp = outputBuffer;
-    outputBuffer = inputBuffer;
-    inputBuffer = tmp;
+    //copy string into input buffer
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
-    uvec2 lastBufferEntry; 
-    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, (2 * test.size() - 2) * sizeof(uint32_t), 2 * sizeof(uint32_t), &lastBufferEntry);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
-    //resize output buffer to (last offset + length of last string)
-    glBufferData(GL_SHADER_STORAGE_BUFFER, (lastBufferEntry.y + rules[lastBufferEntry.x].out.size()) * sizeof(uint32_t), NULL, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, productionsBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, productionsBuffer);
-    glUseProgram(productShader);
-    glDispatchCompute((2 * test.size()) / 32 + 1, 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, stringSize * sizeof(uint32_t), uintString.data(), GL_DYNAMIC_DRAW);
 
+    for (int i = 0; i < n; i++) {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 2 * stringSize * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, productionsBuffer);
+        glUseProgram(stringAssignShader);
+        glDispatchCompute(stringSize / 32 + 1, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        //scansum
+        swapBuffers();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 2 * stringSize * sizeof(uint32_t), NULL, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+        glUseProgram(sumShader);
+        glDispatchCompute(stringSize / 1024 + 1, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+        uvec2 lastBufferEntry; 
+        glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, (2 * stringSize - 2) * sizeof(uint32_t), 2 * sizeof(uint32_t), &lastBufferEntry);
+        //vector<uvec2> bufferdata(stringSize);
+        //glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, 2 * stringSize * sizeof(uint32_t), bufferdata.data());
+        //cout << "buffer data after scansum:\n";
+        //for (uvec2 d : bufferdata) cout << d.x << ", " << d.y << "\n";
+        //resize output buffer to (last offset + length of last string)
+        int newStringSize = 2 * stringSize;//lastBufferEntry.y + rules[lastBufferEntry.x].out.size();
+        
+        //genproduct
+        swapBuffers();
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, newStringSize * sizeof(uint32_t), NULL, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, productionsBuffer);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, productionsBuffer);
+        glUseProgram(productShader);
+        glDispatchCompute((2 * stringSize) / 32 + 1, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        swapBuffers();
+        stringSize = newStringSize;
+    }
     //printing
-    
+    /*
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
     int outputSize;
     glGetBufferParameteriv(GL_SHADER_STORAGE_BUFFER, GL_BUFFER_SIZE, &outputSize);
     vector<uint32_t> testSum;
     testSum.resize(outputSize / sizeof(uint32_t));
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, outputSize, testSum.data());
-    /*
     cout << "buffer data:\n";
     for (int i = 0; i < testSum.size(); i++) {
         cout << ", " << testSum[i];
     }
-    */
+
 
     product = "";
     for (auto c : testSum) {
         product += c;
     }
+    */
 
 }

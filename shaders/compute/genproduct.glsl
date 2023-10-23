@@ -6,7 +6,7 @@ layout (local_size_x = 32) in;
 
 layout (binding = 0) coherent readonly buffer block1
 {
-    uvec2 input_data[gl_WorkGroupSize.x];
+    uvec2 input_data[];
 };
 
 layout (binding = 1) coherent writeonly buffer block2
