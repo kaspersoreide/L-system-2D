@@ -60,10 +60,13 @@ int main() {
 	tree.iterateParallel(3);
 	
 	
-	Turtle turtle(0.02f, 0.2f, 0.136332f);
+	Turtle turtle(0.02f, 0.2f, 0.436332f);
 	//turtle.build(tree.product);
-	turtle.buildGPU(tree.outputBuffer);
-	
+	turtle.buildGPU(tree.inputBuffer);
+	mat4 MVP(1.0f);
+	MVP = scale(MVP, vec3(2.0f));
+	MVP = rotate(MVP, float(std::_Pi / 2), vec3(0.0f, 0.0f, 1.0f));
+	MVP = translate(MVP, vec3(-0.4f, 0.0f, 0.0f));
 	
 	//Lsystem triangle;
 	//triangle.addRule('B', "A-B-A", 1.0f);
@@ -82,6 +85,7 @@ int main() {
 	
 	GLuint treeShader = loadShaders("shaders/tree/vert.glsl", "shaders/tree/frag.glsl");
 	glUseProgram(treeShader);
+	glUniformMatrix4fv(0, 1, GL_FALSE, &MVP[0][0]);
 	glBindVertexArray(turtle.VAO);
 	
 	while (!glfwWindowShouldClose(window)) {

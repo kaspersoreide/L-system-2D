@@ -131,8 +131,8 @@ void Lsystem::iterateParallel(int n) {
         //cout << "buffer data after scansum:\n";
         //for (uvec2 d : bufferdata) cout << d.x << ", " << d.y << "\n";
         //resize output buffer to (last offset + length of last string)
-        int newStringSize = 2 * stringSize;//lastBufferEntry.y + rules[lastBufferEntry.x].out.size();
-        
+        int newStringSize = lastBufferEntry.y + rules[lastBufferEntry.x].out.size();
+        //cout << "new string size: " << newStringSize << "\n";
         //genproduct
         swapBuffers();
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);

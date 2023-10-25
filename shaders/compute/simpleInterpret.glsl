@@ -39,9 +39,10 @@ mat4 translate(vec3 v) {
 
 void main() {
     int top = -1;
-    vec4 stateStack[64]; //x and y is pos, z is angle, w is step
+    vec4 stateStack[128]; //x and y is pos, z is angle, w is step
     vec4 state;   
     state.w = segmentLength;
+    //float angle = 0.1;
     for (uint i = 0; i < stringLength; i++) {
         switch (string[i]) {
             case 43:    //+ 
