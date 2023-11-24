@@ -149,3 +149,7 @@ template<class T> GLuint loadVertexAttrib(vector<T> vertices, uint VAO, uint ind
 
 	return VAO;
 }
+
+float getMilliseconds(chrono::steady_clock::time_point begin, chrono::steady_clock::time_point end) {
+	return chrono::duration_cast<chrono::milliseconds>(end - begin).count();
+}

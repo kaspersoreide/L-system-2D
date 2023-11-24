@@ -2,6 +2,7 @@
 #include <gl/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 using namespace glm;
@@ -16,3 +17,5 @@ GLuint vertexArray1x2f(const vector<vec2>& vertices);
 
 
 template<class T> GLuint loadVertexAttrib(vector<T> vertices, uint VAO, uint index);
+
+float getMilliseconds(chrono::steady_clock::time_point begin, chrono::steady_clock::time_point end);

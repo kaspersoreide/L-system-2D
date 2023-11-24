@@ -1,0 +1,6 @@
+Performance comparison for 2D L-system:
+Generate build string on CPU with 7 iterations: 78 milliseconds
+Generate geometry after 7 iteration build string: 20 milliseconds
+
+time elapsed iterate parallell 7 times: 50
+build geometry on Gpu in milliseconds: 10

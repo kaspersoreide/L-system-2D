@@ -56,13 +56,21 @@ int main() {
 	tree.addRule('+', "+", 1.0f);
 	tree.addRule('-', "-", 1.0f);
 	tree.setAxiom("F");
-	tree.iterate(2);
-	tree.iterateParallel(3);
+	int iterations = 5;
+	//auto begin = chrono::steady_clock::now();
+	//tree.iterate(iterations);
+	//auto end = chrono::steady_clock::now();
+	//cout << "iterate " << iterations << " times GPU in milliseconds: " << getMilliseconds(begin, end) << "\n";
+	tree.iterateParallel(iterations);
 	
 	
 	Turtle turtle(0.02f, 0.2f, 0.436332f);
 	//turtle.build(tree.product);
+	auto begin = chrono::steady_clock::now();
 	turtle.buildGPU(tree.inputBuffer);
+	auto end = chrono::steady_clock::now();
+	cout << "build geometry on Gpu in milliseconds: " << getMilliseconds(begin, end) << "\n";
+	
 	mat4 MVP(1.0f);
 	MVP = scale(MVP, vec3(2.0f));
 	MVP = rotate(MVP, float(std::_Pi / 2), vec3(0.0f, 0.0f, 1.0f));

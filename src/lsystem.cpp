@@ -10,7 +10,15 @@ void Lsystem::setAxiom(string s) {
 }
 
 void Lsystem::iterate(int n) {
-    if (n == 0) return;
+    if (n == 0) {
+        vector<uint32_t> uintString;
+        for (char c : product) uintString.push_back(c);
+        int stringSize = uintString.size();
+        glCreateBuffers(1, &inputBuffer);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, stringSize * sizeof(uint32_t), uintString.data(), GL_DYNAMIC_DRAW);
+        return;
+    }
     string newProduct = "";
     for (int i = 0; i < product.length(); ++i) {
         char c = product[i];
@@ -86,6 +94,7 @@ void Lsystem::swapBuffers() {
 }
 
 void Lsystem::iterateParallel(int n) {
+    auto begin = chrono::steady_clock::now();
     vector<uint32_t> uintString;
     for (char c : product) uintString.push_back(c);
     int stringSize = uintString.size();
@@ -166,5 +175,6 @@ void Lsystem::iterateParallel(int n) {
         product += c;
     }
     */
-
+    auto end = chrono::steady_clock::now();
+    cout << "time elapsed iterate parallell " << n << " times: " << getMilliseconds(begin, end) << "\n"; 
 }
